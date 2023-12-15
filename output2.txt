@@ -1,0 +1,5 @@
+Output
+Starting matrix initialization
+Starting multiplication
+Det is 9937.038279379107
+Task execution completed.
