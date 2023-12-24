@@ -41,8 +41,6 @@ public class Resource {
 
     private String machinePath; // machine path in znode
 
-    private volatile double taskDuration;
-
     private volatile boolean completed;
     // TODO: study more about the security manager and implement it.
 
@@ -164,7 +162,7 @@ public class Resource {
             // wait for worker thread to join master thread.
             try {
                 workThread.join();
-                System.out.println("Worker thread finished");
+                //System.out.println("Worker thread finished");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -180,7 +178,7 @@ public class Resource {
             System.out.println("Status written to client znode");
 
             try {
-                System.out.println("Waiting for client to start server.");
+                //System.out.println("Waiting for client to start server.");
                 Thread.sleep(4000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -191,6 +189,8 @@ public class Resource {
 
             // delete or clear both files?
             FileTransfer.deleteFiles();
+
+            System.out.flush();
 
             isAssigned = false;
             completed = false;
@@ -251,31 +251,53 @@ public class Resource {
 
              */
 
-            // set completed to true
-
-
             try {
                 double start = System.currentTimeMillis();
                 var processBuilder = new ProcessBuilder("java", "src/main/java/UITest/Compute.java");
                 var process = processBuilder.start();
 
                 process.waitFor();
-                System.out.println("Process completed");
-                BufferedInputStream inputStream = new BufferedInputStream(process.getInputStream(),512);
-                BufferedInputStream errorStream = new BufferedInputStream(process.getErrorStream());
+                //System.out.println("Process completed");
+                double end = System.currentTimeMillis();
 
-                BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream("output.txt"));
-                PrintStream printStream = new PrintStream(System.out);
+                double taskDuration = (end - start); // TODO correct this.
+                try (
+                    BufferedInputStream inputStream =
+                            new BufferedInputStream(process.getInputStream(),512);
+                    BufferedInputStream errorStream =
+                            new BufferedInputStream(process.getErrorStream());
 
-                System.out.println("Printing output from process");
-                byte[] output = inputStream.readAllBytes();
-                printStream.println(new String(output));
-                printStream.flush();
-                // write to file.
-                bufferedOutputStream.write("Output\n".getBytes());
-                bufferedOutputStream.write(output);
-                bufferedOutputStream.flush();
+                    BufferedOutputStream bufferedOutputStream =
+                            new BufferedOutputStream(new FileOutputStream("output.txt"));
+                    PrintStream printStream = new PrintStream(System.out);
+                ) {
+                    //System.out.println("Printing output from process");
+                    byte[] output = inputStream.readAllBytes();
+                    //printStream.println(new String(output));
+                    //printStream.flush();
+                    // write to file.
+                    var str = "***********output*******\n";
+                    bufferedOutputStream.write(str.getBytes());
+                    bufferedOutputStream.write(output);
+                    bufferedOutputStream.flush();
 
+                    var errorStr = "***********error*********\n";
+                    bufferedOutputStream.write(errorStr.getBytes());
+                    output = errorStream.readAllBytes();
+                    bufferedOutputStream.write(output);
+                    bufferedOutputStream.flush();
+
+                    var time = ("""
+
+                            Execution time of Script is : %.3f ns.
+                            Billing amount : $ %.5f 
+                            """).formatted(taskDuration, taskDuration * 0.0205);
+                    bufferedOutputStream.write(time.getBytes());
+                    bufferedOutputStream.flush();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 /*
                 System.out.println("printing error from process");
                 byte[] error = errorStream.readAllBytes();
@@ -288,16 +310,9 @@ public class Resource {
 
                  */
 
-                double end = System.currentTimeMillis();
-
-                taskDuration = (end-start)/1e6; // TODO correct this.
-
-                System.out.println("Completed task. Duration: "+taskDuration);
+                System.out.println("Completed script. Duration: "+ taskDuration);
+                System.out.flush();
                 completed = true;
-
-                // close streams
-                inputStream.close();
-                printStream.close();
 
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();

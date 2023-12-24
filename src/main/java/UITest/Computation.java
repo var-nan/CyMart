@@ -44,9 +44,9 @@ public class Computation{
     }
 
     public static void main(String[] args) {
-        int M = 10;
-        int N = 10;
-        int K = 10;
+        int M = 50;
+        int N = 50;
+        int K = 50;
 
         double[][] A = new double[M][K];
         double[][] B = new double[K][N];
@@ -67,8 +67,6 @@ public class Computation{
         System.out.println("Det is "+sum);
 
         System.out.println("Task execution completed.");
-
-
 
     }
 }

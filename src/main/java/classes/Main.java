@@ -13,6 +13,7 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
         //classes.FileTransfer fileTransfer = new classes.FileTransfer("sample.txt");
         //fileTransfer.startTransfer();
+
         var pb = new ProcessBuilder("java","src/main/java/UITest/Computation.java").start();
 
         pb.waitFor();
