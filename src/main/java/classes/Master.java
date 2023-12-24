@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static classes.Constants.ZK_MACHINES_PATH;
 import static classes.Constants.ZK_TASKS_PATH;
@@ -50,9 +51,9 @@ public class Master {
 
         try {
 
-            matching = new HashMap<>();
-            machines = new HashMap<>();
-            tasks = new HashMap<>();
+            matching = new ConcurrentHashMap<>();
+            machines = new ConcurrentHashMap<>();
+            tasks = new ConcurrentHashMap<>();
 
             this.machineWatcher = new Watcher() {
                 @Override
@@ -153,7 +154,7 @@ public class Master {
     }
 
     void start() {
-        System.out.println("Starting the functionality");
+        System.out.println("Starting the Master");
         while(true) {
 
             Thread.onSpinWait();
@@ -167,7 +168,7 @@ public class Master {
             // add task to matching and machines.
             machines.put(machineId,machineAD);
 
-            System.out.println("Machine is added: "+machineId);
+            System.out.println("Machine added to system: "+machineId);
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -187,7 +188,7 @@ public class Master {
 
             tasks.put(taskId, task);
 
-            System.out.println("Task is added: "+taskId);
+            System.out.println("Task added to system: "+taskId);
 
             // create a matching
             var machineId = getResource(task);
